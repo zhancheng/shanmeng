@@ -182,7 +182,7 @@ export default {
             return newArr;
         },
         goDetail(item){
-            callClientInterface('showImageDetail', {
+            util.callClientInterface('showImageDetail', {
                 id: item.id
             });
         },
