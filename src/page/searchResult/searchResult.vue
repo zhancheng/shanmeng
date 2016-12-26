@@ -13,7 +13,7 @@
             <div class="hot-mod border-1px-t">
                 <h3><em></em>最热推荐</h3>
                 <div v-for="arr in hotList" class="row">
-                    <p v-for="item in arr" @click="goDetail">
+                    <p v-for="item in arr" @click="goDetail(item)">
                         <span><img :src="item.url" @load="showImg($event)" v-middle="item"></span>
                     </p>
                 </div>
@@ -22,7 +22,7 @@
             <div class="latest-mod">
                 <h3><em></em>最近更新</h3>
                 <div v-for="arr in searchList" class="row">
-                    <p v-for="item in arr" @click="goDetail">
+                    <p v-for="item in arr" @click="goDetail(item)">
                         <span><img :src="item.url" @load="showImg($event)" v-middle="item"></span>
                     </p>
                 </div>
@@ -84,7 +84,6 @@ export default {
     },
     directives: {
         middle(el, binding, vnode){
-
             setTimeout(function(){
                 var val = binding.value;
                 var wh = el.parentNode.offsetWidth;
@@ -96,9 +95,6 @@ export default {
                     el.style.width = wh + 'px';
                 }
             },0)
-
-            // var marginTop = Math.ceil((val.w > val.h ? ((val.w - val.h)/val.w)/2 : 0) * 100);
-            // el.style.marginTop = marginTop + '%';
         }
     },
     created(){
@@ -165,6 +161,16 @@ export default {
         },
         format(arr){
             var newArr = [];
+            // 如果不能被三整除  需要把数组扩充到能被整除
+            if(arr.length % 3 !== 0){
+                var splitArr = [];
+                var len = (3 - (arr.length % 3));
+                for(var i=0; i<len; i++){
+                    splitArr.push({});
+                }
+                arr = arr.concat(splitArr);
+            }
+
             arr.forEach((item, index) => {
                 var idx = Math.floor(index / 3);
                 if(!newArr[idx]){
@@ -172,10 +178,13 @@ export default {
                 }
                 newArr[idx].push(item);
             })
+
             return newArr;
         },
-        goDetail(){
-            alert('去往详情页')
+        goDetail(item){
+            callClientInterface('showImageDetail', {
+                id: item.id
+            });
         },
         showImg(event){
             event.target.style.display = 'block';
@@ -217,9 +226,13 @@ export default {
 }
 
 .search-result-wrapper{
+    -webkit-overflow-scrolling: touch;
+    position: absolute;
     overflow: auto;
-    height: 100%;
-    width: 100%;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
     font-size: 0.14rem;
     background: #f4f4f4;
     .loading, .no-more{
