@@ -5,19 +5,19 @@ function getUrlParam(name) {
 }
 
 function callClientInterface(interfaceName, args){
-        var os = checkPlatform();
-        var method = '';
-        if(os == 'android'){
-                var  args = JSON.stringify(args);
-                method = 'window.JSInterface.'+interfaceName+'(args)';
-        }else if(os == 'ios'){
-                method = 'window.webkit.messageHandlers.'+interfaceName+'.postMessage(args)';
-        }
-        try{
-                eval(method);
-        } catch(e){
-                console.log(e);
-        }
+    var ua = navigator.userAgent.toLowerCase();
+    var method = '';
+    if(ua.indexOf('iphone') > -1){
+        var  args = JSON.stringify(args);
+        method = 'window.JSInterface.'+interfaceName+'(args)';
+    }else{
+        method = 'window.webkit.messageHandlers.'+interfaceName+'.postMessage(args)';
+    }
+    try{
+        eval(method);
+    } catch(e){
+        console.log(e);
+    }
 }
 
 
