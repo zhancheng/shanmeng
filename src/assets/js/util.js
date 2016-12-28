@@ -1,3 +1,11 @@
+function params(obj) {
+    var arr = [];
+    for (var i in obj) {
+        arr.push(i + '=' + encodeURIComponent(obj[i]));
+    }
+    return '?' + arr.join('&');
+}
+
 function getUrlParam(name) {
     var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
     var r = window.location.search.substr(1).match(reg);
@@ -20,8 +28,14 @@ function callClientInterface(interfaceName, args){
     }
 }
 
+function ping(options){
+    var img = document.createElement('img');
+    img.src='https://ping.weshineapp.com/viewdetail.gif'+ params(options) +'&t=' + (new Date()).getTime();
+}
+
 
 export default {
     callClientInterface,
     getUrlParam,
+    ping
 }

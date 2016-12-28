@@ -2,7 +2,7 @@
     <div class="search-result-wrapper">
         <template v-if="totalCount > 0">
             <!-- 表情包模块 -->
-            <div class="pack-mod border-1px" v-for="item in emoList">
+            <div class="pack-mod border-1px" v-for="item in emoList" @click="goPack(item)">
                 <p class="name">{{item.name}}<span>{{item.count}}P</span></p>
                 <p class="summary">{{item.summary}}</p>
                 <ul>
@@ -81,6 +81,8 @@ export default {
             scrollLock: true,
             // 总结果数
             totalCount: 0,
+            // 客户端信息
+            nativeInfo: null,
             blank: require('assets/img/blank.gif')
         }
     },
@@ -100,9 +102,21 @@ export default {
         }
     },
     created(){
-        this.getPackAndHot();
-        this.getSearchList();
-
+        this.getNativeInfo();
+        // setTimeout(function(){
+        //     getNativeInfo({
+        //       "s":"iOS", //系统
+        //       "sv":"10.2", //系统版本
+        //       "v":"1.16.1", //APP版本号
+        //       "lan":"zh-Hans",//语言
+        //       "h":"4a800a419d4f43a9b272dab8d7c09ad0", //机器码
+        //       "autoplay":"1", //图片是否自动播放
+        //       "starttimestamp":"1482895818", //启动时间
+        //       "netstatus":"1", //网络状态
+        //       "timestamp":"1482895819", //时间戳
+        //       "sign":"7e879fe48ba7e634fbd3f757e287b303" //签名
+        //     })
+        // },1000)
     },
     mounted(){
         this.bindEvent();
@@ -110,11 +124,27 @@ export default {
     updated(){
         this.initLazyload();
     },
+    watch: {
+        // 所有的接口请求都要在客户端信息准备就绪后发送
+        nativeInfo(){
+            this.getPackAndHot();
+            this.getSearchList();
+        }
+    },
     methods: {
+        getNativeInfo(){
+            var _this = this;
+            window.getNativeInfo = function(info){
+                _this.nativeInfo = info;
+            }
+            callClientInterface('showCallback', {
+                name: getNativeInfo
+            });
+        },
         initLazyload(){
             lazyload.init({
                 wrapper: document.querySelector('.search-result-wrapper'),
-                offset: 100
+                offset: 200
             });
         },
         // 获取表情包和最热数据
@@ -122,7 +152,8 @@ export default {
             var _this = this;
             this.$http.jsonp('https://api.weshine.im/v2.0/search', {
                 params: {
-                    timestamp: +new Date(),
+                    timestamp: this.nativeInfo.timestamp,
+                    sign: this.nativeInfo.sign,
                     keyword: this.keyword,
                     block: 'hot'
                 }
@@ -139,7 +170,8 @@ export default {
             this.loading = true;
             this.$http.jsonp('https://api.weshine.im/v2.0/search', {
                 params: {
-                    timestamp: +new Date(),
+                    timestamp: this.nativeInfo.timestamp,
+                    sign: this.nativeInfo.sign,
                     keyword: this.keyword,
                     block: 'list',
                     offset: (this.pageNo - 1) * this.pageCount,
@@ -168,6 +200,16 @@ export default {
         },
         reSearch(keyword){
             this.keyword = keyword;
+
+            util.ping({
+                f: 'noresultpage',
+                fv: 'hotwords',
+                kw: keyword,
+                h: this.nativeInfo.h,
+                s: this.nativeInfo.s,
+                v: this.nativeInfo.v,
+            })
+
             this.getPackAndHot();
             this.getSearchList();
         },
@@ -194,8 +236,30 @@ export default {
             return newArr;
         },
         goDetail(item){
+            util.ping({
+                f: 'searchresultlist',
+                fv: this.keyword,
+                h: this.nativeInfo.h,
+                s: this.nativeInfo.s,
+                uid: item.id,
+                v: this.nativeInfo.v,
+            })
             util.callClientInterface('showImageDetail', {
                 id: item.id
+            });
+        },
+        goPack(item){
+            util.ping({
+                f: 'searchresultlist',
+                fv: this.keyword,
+                h: this.nativeInfo.h,
+                s: this.nativeInfo.s,
+                uid: item.id,
+                v: this.nativeInfo.v,
+            })
+            util.callClientInterface('showEmoticonPackage', {
+                id: item.id,
+                name: item.name
             });
         },
         showImg(event){
@@ -320,6 +384,7 @@ export default {
         background: #fff;
         overflow: hidden;
         position: relative;
+        cursor: pointer;
         .name{
             padding: 0.15rem 0.15rem 0.1rem;
             span{

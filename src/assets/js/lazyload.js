@@ -9,7 +9,9 @@ var lazyload = (function(window, document, undefined) {
 		offset, throttle, poll, wrapper;
 	var _inView = function(el) {
 			var coords = el.getBoundingClientRect();
-			return ((coords.top >= 0 && coords.left >= 0 && coords.top) <= (window.innerHeight || document.documentElement.clientHeight) + parseInt(offset));
+            var wrapper = wrapper || document.body;
+            return (coords.top <= (wrapper.scrollTop + wrapper.clientHeight  + parseInt(offset)))
+			// return ((coords.top >= 0 && coords.left >= 0 && coords.top) <= (window.innerHeight || document.documentElement.clientHeight) + parseInt(offset));
 		};
 	var _pollImages = function() {
 			for (var i = store.length; i--;) {
