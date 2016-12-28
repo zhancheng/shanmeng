@@ -9,9 +9,9 @@ function callClientInterface(interfaceName, args){
     var method = '';
     if(ua.indexOf('iphone') > -1){
         var  args = JSON.stringify(args);
-        method = 'window.JSInterface.'+interfaceName+'(args)';
-    }else{
         method = 'window.webkit.messageHandlers.'+interfaceName+'.postMessage(args)';
+    }else{
+        method = 'window.JSInterface.'+interfaceName+'(args)';
     }
     try{
         eval(method);

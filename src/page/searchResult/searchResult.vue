@@ -6,7 +6,7 @@
                 <p class="name">{{item.name}}<span>{{item.count}}P</span></p>
                 <p class="summary">{{item.summary}}</p>
                 <ul>
-                    <li v-for="img in item.img"><img :src="img" @load="showImg($event)"></li>
+                    <li v-for="img in item.img"><img :src="blank" :data-echo="img"></li>
                 </ul>
             </div>
             <!-- 最热推荐 -->
@@ -14,7 +14,7 @@
                 <h3><em></em>最热推荐</h3>
                 <div v-for="arr in hotList" class="row">
                     <p v-for="item in arr" @click="goDetail(item)">
-                        <span><img :src="item.url" @load="showImg($event)" v-middle="item"></span>
+                        <span><img :src="blank" :data-echo="item.url" v-middle="item"></span>
                     </p>
                 </div>
             </div>
@@ -23,7 +23,7 @@
                 <h3><em></em>最近更新</h3>
                 <div v-for="arr in searchList" class="row">
                     <p v-for="item in arr" @click="goDetail(item)">
-                        <span><img :src="item.url" @load="showImg($event)" v-middle="item"></span>
+                        <span><img :src="blank" :data-echo="item.url" v-middle="item"></span>
                     </p>
                 </div>
             </div>
@@ -52,6 +52,7 @@
 
 <script>
 import util from 'assets/js/util'
+import lazyload from 'assets/js/lazyload'
 
 export default {
     name: 'search-result',
@@ -79,7 +80,8 @@ export default {
             // 滚动锁  当触发请求时将不再允许触发下次请求
             scrollLock: true,
             // 总结果数
-            totalCount: 0
+            totalCount: 0,
+            blank: require('assets/img/blank.gif')
         }
     },
     directives: {
@@ -100,11 +102,21 @@ export default {
     created(){
         this.getPackAndHot();
         this.getSearchList();
+
     },
     mounted(){
         this.bindEvent();
     },
+    updated(){
+        this.initLazyload();
+    },
     methods: {
+        initLazyload(){
+            lazyload.init({
+                wrapper: document.querySelector('.search-result-wrapper'),
+                offset: 100
+            });
+        },
         // 获取表情包和最热数据
         getPackAndHot(){
             var _this = this;
@@ -335,7 +347,7 @@ export default {
                 img{
                     height: 0.5rem;
                     width: 0.5rem;
-                    display: none;
+                    // display: none;
                 }
             }
         }
@@ -378,7 +390,7 @@ export default {
                 background: #fbfbfb;
             }
             img{
-                display: none;
+                // display: none;
             }
         }
     }
