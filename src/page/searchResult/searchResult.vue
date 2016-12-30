@@ -138,7 +138,7 @@ export default {
                 _this.nativeInfo = info;
             }
             util.callClientInterface('showCallback', {
-                name: getNativeInfo
+                name: 'getNativeInfo'
             });
         },
         initLazyload(){
