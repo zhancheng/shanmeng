@@ -16,9 +16,9 @@ function callClientInterface(interfaceName, args){
     var ua = navigator.userAgent.toLowerCase();
     var method = '';
     if(ua.indexOf('iphone') > -1){
-        var  args = JSON.stringify(args);
         method = 'window.webkit.messageHandlers.'+interfaceName+'.postMessage(args)';
     }else{
+        var  args = JSON.stringify(args);
         method = 'window.JSInterface.'+interfaceName+'(args)';
     }
     try{
