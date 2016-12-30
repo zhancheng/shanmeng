@@ -137,7 +137,7 @@ export default {
             window.getNativeInfo = function(info){
                 _this.nativeInfo = info;
             }
-            callClientInterface('showCallback', {
+            util.callClientInterface('showCallback', {
                 name: getNativeInfo
             });
         },
