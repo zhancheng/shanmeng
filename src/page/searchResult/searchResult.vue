@@ -75,6 +75,8 @@ export default {
             pageNo: 1,
             // 每页展示数目
             pageCount: 30,
+            // 请求的起始数
+            offset: 0,
             // 设置滚动到距离底部多少时触发翻页 默认100px
             scrollLimit: 100,
             // 滚动锁  当触发请求时将不再允许触发下次请求
@@ -184,13 +186,15 @@ export default {
                     sign: this.nativeInfo.sign,
                     keyword: this.keyword,
                     block: 'list',
-                    offset: (this.pageNo - 1) * this.pageCount,
+                    // offset: (this.pageNo - 1) * this.pageCount,
+                    offset: this.offset,
                     limit: this.pageCount
                 }
             }).then((res) => {
                 var data = JSON.parse(res.data);
                 if(data.meta.status === 200){
                     _this.searchList = _this.searchList.concat(_this.format(data.data));
+                    _this.offset = data.pagination.offset;
                     _this.scrollLock = true;
                     _this.loading = false;
                     // 如果没有查询结果
