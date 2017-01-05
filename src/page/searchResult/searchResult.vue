@@ -1,8 +1,8 @@
 <template>
     <div class="search-result-wrapper">
-        <template v-if="totalCount > 0">
+        <template v-if="!isEmpty">
             <!-- 表情包模块 -->
-            <div class="pack-mod border-1px" v-for="item in emoList" @click="goPack(item)">
+            <div v-if="emoList.length > 0" class="pack-mod border-1px" v-for="item in emoList" @click="goPack(item)">
                 <p class="name">{{item.name}}<span>{{item.count}}P</span></p>
                 <p class="summary">{{item.summary}}</p>
                 <ul>
@@ -10,7 +10,7 @@
                 </ul>
             </div>
             <!-- 最热推荐 -->
-            <div class="hot-mod border-1px-t">
+            <div v-if="hotList.length > 0" class="hot-mod border-1px-t">
                 <h3><em></em>最热推荐</h3>
                 <div v-for="arr in hotList" class="row">
                     <p v-for="item in arr" @click="goDetail(item)">
@@ -19,7 +19,7 @@
                 </div>
             </div>
             <!-- 最近更新 -->
-            <div class="latest-mod">
+            <div  v-if="searchList.length > 0" class="latest-mod">
                 <h3><em></em>最近更新</h3>
                 <div v-for="arr in searchList" class="row">
                     <p v-for="item in arr" @click="goDetail(item)">
@@ -30,7 +30,7 @@
             <div v-if="loading" class="loading"><em></em>正在加载更多的数据...</div>
             <div v-if="noMore" class="no-more">已经全部加载完毕</div>
         </template>
-        <template v-if="totalCount == 0 && hasRequest">
+        <template v-if="isEmpty && hasRequest">
             <div class="no-result">
                 <div class="sug-tip">
                     <em></em>
@@ -79,11 +79,14 @@ export default {
             scrollLimit: 100,
             // 滚动锁  当触发请求时将不再允许触发下次请求
             scrollLock: true,
-            // 总结果数
-            totalCount: 0,
+            // 是否无结果
+            isEmpty: 0,
             // 客户端信息
             nativeInfo: null,
-            blank: require('assets/img/blank.gif')
+            // blank.gif
+            blank: require('assets/img/blank.gif'),
+            // debug
+            debug: Boolean(util.getUrlParam('debug')) || false
         }
     },
     directives: {
@@ -103,20 +106,22 @@ export default {
     },
     created(){
         this.getNativeInfo();
-        // setTimeout(function(){
-        //     getNativeInfo({
-        //       "s":"iOS", //系统
-        //       "sv":"10.2", //系统版本
-        //       "v":"1.16.1", //APP版本号
-        //       "lan":"zh-Hans",//语言
-        //       "h":"4a800a419d4f43a9b272dab8d7c09ad0", //机器码
-        //       "autoplay":"1", //图片是否自动播放
-        //       "starttimestamp":"1482895818", //启动时间
-        //       "netstatus":"1", //网络状态
-        //       "timestamp":"1482895819", //时间戳
-        //       "sign":"7e879fe48ba7e634fbd3f757e287b303" //签名
-        //     })
-        // },1000)
+        if(this.debug){
+            setTimeout(function(){
+                getNativeInfo({
+                  "s":"iOS", //系统
+                  "sv":"10.2", //系统版本
+                  "v":"1.16.1", //APP版本号
+                  "lan":"zh-Hans",//语言
+                  "h":"4a800a419d4f43a9b272dab8d7c09ad0", //机器码
+                  "autoplay":"1", //图片是否自动播放
+                  "starttimestamp":"1482895818", //启动时间
+                  "netstatus":"1", //网络状态
+                  "timestamp":"1482895819", //时间戳
+                  "sign":"7e879fe48ba7e634fbd3f757e287b303" //签名
+                })
+            },1000)
+        }
     },
     mounted(){
         this.bindEvent();
@@ -137,9 +142,11 @@ export default {
             window.getNativeInfo = function(info){
                 _this.nativeInfo = info;
             }
-            util.callClientInterface('showCallback', {
-                name: 'getNativeInfo'
-            });
+            if(!this.debug){
+                util.callClientInterface('showCallback', {
+                    name: 'getNativeInfo'
+                });
+            }
         },
         initLazyload(){
             lazyload.init({
@@ -162,6 +169,9 @@ export default {
                 if(data.meta.status === 200){
                     _this.emoList = data.data.emolist;
                     _this.hotList = _this.format(data.data.hot);
+                    _this.hasRequest = true;
+                    _this.isEmpty = (_this.emoList.length == 0 &&  _this.hotList.length ==0);
+                    // _this.totalCount = data.pagination.totalCount;
                 }
             })
         },
@@ -181,8 +191,6 @@ export default {
                 var data = JSON.parse(res.data);
                 if(data.meta.status === 200){
                     _this.searchList = _this.searchList.concat(_this.format(data.data));
-                    _this.hasRequest = true;
-                    _this.totalCount = data.pagination.totalCount;
                     _this.scrollLock = true;
                     _this.loading = false;
                     // 如果没有查询结果
@@ -380,7 +388,7 @@ export default {
         }
     }
     .pack-mod{
-        margin: 0.15rem 0.15rem auto;
+        margin: 0.15rem;
         background: #fff;
         overflow: hidden;
         position: relative;
@@ -422,7 +430,6 @@ export default {
             .title()
         }
         background: #fff;
-        margin-top: 0.15rem;
         position: relative;
     }
     .latest-mod{
