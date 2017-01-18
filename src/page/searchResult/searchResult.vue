@@ -161,6 +161,10 @@ export default {
             var _this = this;
             this.$http.jsonp('https://api.weshine.im/v2.0/search', {
                 params: {
+                    s: this.nativeInfo.s,
+                    sv: this.nativeInfo.sv,
+                    v: this.nativeInfo.v,
+                    h: this.nativeInfo.h,
                     timestamp: this.nativeInfo.timestamp,
                     sign: this.nativeInfo.sign,
                     keyword: this.keyword,
@@ -182,6 +186,10 @@ export default {
             this.loading = true;
             this.$http.jsonp('https://api.weshine.im/v2.0/search', {
                 params: {
+                    s: this.nativeInfo.s,
+                    sv: this.nativeInfo.sv,
+                    v: this.nativeInfo.v,
+                    h: this.nativeInfo.h,
                     timestamp: this.nativeInfo.timestamp,
                     sign: this.nativeInfo.sign,
                     keyword: this.keyword,
@@ -256,9 +264,16 @@ export default {
                 uid: item.id,
                 v: this.nativeInfo.v,
             })
-            util.callClientInterface('showImageDetail', {
-                id: item.id
-            });
+            if(Number(item.isvideo) === 1){
+                util.callClientInterface('showWeb', {
+                    url: 'http://h5.weshineapp.com/detail-v.html?is_video=1&id=' + item.id,
+                    name:'视频'
+                });
+            }else{
+                util.callClientInterface('showImageDetail', {
+                    id: item.id
+                });
+            }
         },
         goPack(item){
             util.ping({
